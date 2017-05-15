@@ -1,0 +1,13 @@
+---
+title: "online-grading"
+author: "GAN LING"
+date: "2017/4/19"
+output: html_document
+---
+
+## read the data into RStudio
+
+```{r}
+grading = read.csv("k project data 2.csv")
+
+```
