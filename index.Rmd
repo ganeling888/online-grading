@@ -5,26 +5,26 @@ date: "2017/4/19"
 output: html_document
 ---
 
-## in this file our original document is KAdebowaleGender_SBU original 050117  test  (1).xlsx.
-## I open the file using Excel, then sort it according to StudentNumber column
-## then save it as KAdebowaleGender_SBU.csv file to use
+in this file our original document is KAdebowaleGender_SBU original 050117  test  (1).xlsx.
+I open the file using Excel, then sort it according to StudentNumber column
+then save it as KAdebowaleGender_SBU.csv file to use
 
-## read the data into RStudio
+read the data into RStudio
 
 ```{r}
 grading = read.csv("KAdebowaleGender_SBU.csv")
 ```
 
 
-# The purpose of this project is to  calculate the correlation between the final grade
-## 1. total Hits  (column CW)
+The purpose of this project is to  calculate the correlation between the final grade
+1. total Hits  (column CW)
 
 ```{r}
 data1 = grading[,c("TotalGrade", "TotalDBMFhits")]
 ```
 
-## because the data doesn't have any NA and NULL data, we don't need to deal with that
-## create training set and test set
+because the data doesn't have any NA and NULL data, we don't need to deal with that
+create training set and test set
 
 ```{r}
 require(caret)
@@ -35,4 +35,103 @@ trainingset <- data1[inTrain[[1]],]
 testset = data1[-inTrain[[1]],]
 ```
 
-### use GLM
+draw the plot about the relationship between them
+
+```{r}
+glm.fit = glm(TotalGrade~TotalDBMFhits,data = trainingset)
+summary(glm.fit)
+plot(trainingset$TotalDBMFhits, trainingset$TotalGrade, xlab="TotalDBMFhits", ylab="TotalGrade")
+abline(glm.fit, col="blue", lwd=2)
+```
+
+we can also see the correlation rate between them
+
+```{r}
+library(lsr)
+correlate(trainingset, corr.method="spearman" )
+```
+
+then we can use it to test set
+
+```{r}
+glm.probs = predict(glm.fit, newdata = testset, type = "response") 
+glm.probs[1:5]
+glm.pred = as.data.frame(round(glm.probs)) 
+colnames(glm.pred) = c("pred")
+calacc = function(x, y, error){
+    equal = 0
+    total = length(x)
+    for (i in 1:total){
+        upvalue = y[i] + error
+        downvalue = y[i] = error
+        if (x[i] >= downvalue && x[i] <= upvalue){
+            equal = equal + 1
+        }
+    }
+    acc = equal / total 
+    acc
+}
+# calculate the accuracy, the error set to 5 points
+calacc(glm.pred$pred, testset$TotalGrade, 5)
+```
+
+2. total time spent in the course ( Column  T)
+
+```{r}
+data2 = grading[,c("TotalGrade", "TotalTimeStudentsspentinCourseinHours")]
+```
+
+because the data have NA and NULL data, we need to deal with that
+
+```{r}
+cleanNULL = function(x){
+   for (i in 1:nrow(x)){
+       for (j in 1:ncol(x)){
+           if (x[i, j] == "#NULL!"){
+              x[i, j] = NA 
+           }
+       }
+   } 
+    x
+}
+data2 = cleanNULL(data2)
+data2 = na.omit(data2)
+data2$TotalTimeStudentsspentinCourseinHours = as.integer(data2$TotalTimeStudentsspentinCourseinHours)
+```
+
+create training set and test set
+
+```{r}
+seed = as.numeric(as.Date("2017-04-19"))
+set.seed(seed)
+inTrain = createDataPartition(data2$TotalGrade, p=0.7)
+trainingset <- data2[inTrain[[1]],]
+testset = data2[-inTrain[[1]],]
+```
+
+draw the plot about the relationship between them
+
+```{r}
+glm.fit = glm(TotalGrade~TotalTimeStudentsspentinCourseinHours,data = trainingset)
+summary(glm.fit)
+plot(trainingset$TotalTimeStudentsspentinCourseinHours, trainingset$TotalGrade, xlab="TotalTimeStudentsspentinCourseinHours", ylab="TotalGrade")
+abline(glm.fit, col="blue", lwd=2)
+```
+
+we can also see the correlation rate between them
+
+```{r}
+correlate(trainingset, corr.method="spearman" )
+```
+
+then we can use it to test set
+
+```{r}
+glm.probs = predict(glm.fit, newdata = testset, type = "response") 
+glm.probs[1:5]
+glm.pred = as.data.frame(round(glm.probs)) 
+colnames(glm.pred) = c("pred")
+# calculate the accuracy, the error set to 0 points
+calacc(glm.pred$pred, testset$TotalGrade, 0)
+```
+
