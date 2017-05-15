@@ -135,3 +135,53 @@ colnames(glm.pred) = c("pred")
 calacc(glm.pred$pred, testset$TotalGrade, 0)
 ```
 
+3. Both   Total Hits and Total Time
+
+```{r}
+data3 = grading[,c("TotalGrade", "TotalDBMFhits", "TotalTimeStudentsspentinCourseinHours")]
+```
+
+because the data have NA and NULL data, we need to deal with that
+
+```{r}
+data3 = cleanNULL(data3)
+data3 = na.omit(data3)
+data3$TotalTimeStudentsspentinCourseinHours = as.integer(data3$TotalTimeStudentsspentinCourseinHours)
+```
+
+create training set and test set
+
+```{r}
+seed = as.numeric(as.Date("2017-04-19"))
+set.seed(seed)
+inTrain = createDataPartition(data3$TotalGrade, p=0.7)
+trainingset <- data3[inTrain[[1]],]
+testset = data3[-inTrain[[1]],]
+```
+
+using glm to do the train
+
+```{r}
+glm.fit = glm(TotalGrade~.,data = trainingset)
+summary(glm.fit)
+```
+
+we can also see the correlation rate between them
+
+```{r}
+correlate(trainingset, corr.method="spearman" )
+```
+
+then we can use it to test set
+
+```{r}
+glm.probs = predict(glm.fit, newdata = testset, type = "response") 
+glm.probs[1:5]
+glm.pred = as.data.frame(round(glm.probs)) 
+colnames(glm.pred) = c("pred")
+# calculate the accuracy, the error set to 0 points
+calacc(glm.pred$pred, testset$TotalGrade, 0)
+```
+
+
+*from the result we can conclude that total time spent in the course has more correlation with total grade*

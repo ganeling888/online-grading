@@ -285,6 +285,85 @@ colnames(glm.pred) = c(&quot;pred&quot;)
 # calculate the accuracy, the error set to 0 points
 calacc(glm.pred$pred, testset$TotalGrade, 0)</code></pre>
 <pre><code>## [1] 0.8333333</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Both Total Hits and Total Time</li>
+</ol>
+<pre class="r"><code>data3 = grading[,c(&quot;TotalGrade&quot;, &quot;TotalDBMFhits&quot;, &quot;TotalTimeStudentsspentinCourseinHours&quot;)]</code></pre>
+<p>because the data have NA and NULL data, we need to deal with that</p>
+<pre class="r"><code>data3 = cleanNULL(data3)
+data3 = na.omit(data3)
+data3$TotalTimeStudentsspentinCourseinHours = as.integer(data3$TotalTimeStudentsspentinCourseinHours)</code></pre>
+<p>create training set and test set</p>
+<pre class="r"><code>seed = as.numeric(as.Date(&quot;2017-04-19&quot;))
+set.seed(seed)
+inTrain = createDataPartition(data3$TotalGrade, p=0.7)
+trainingset &lt;- data3[inTrain[[1]],]
+testset = data3[-inTrain[[1]],]</code></pre>
+<p>using glm to do the train</p>
+<pre class="r"><code>glm.fit = glm(TotalGrade~.,data = trainingset)
+summary(glm.fit)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = TotalGrade ~ ., data = trainingset)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -23.469   -1.977    1.865    4.582   14.021  
+## 
+## Coefficients:
+##                                       Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                           81.58454    4.18679  19.486   &lt;2e-16
+## TotalDBMFhits                          0.05442    0.07399   0.736   0.4672
+## TotalTimeStudentsspentinCourseinHours  0.36053    0.16070   2.244   0.0317
+##                                          
+## (Intercept)                           ***
+## TotalDBMFhits                            
+## TotalTimeStudentsspentinCourseinHours *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for gaussian family taken to be 79.61059)
+## 
+##     Null deviance: 3275.0  on 35  degrees of freedom
+## Residual deviance: 2627.1  on 33  degrees of freedom
+## AIC: 264.61
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>we can also see the correlation rate between them</p>
+<pre class="r"><code>correlate(trainingset, corr.method=&quot;spearman&quot; )</code></pre>
+<pre><code>## Warning in cor.test.default(x, y, method = method): Cannot compute exact p-
+## value with ties
+
+## Warning in cor.test.default(x, y, method = method): Cannot compute exact p-
+## value with ties
+
+## Warning in cor.test.default(x, y, method = method): Cannot compute exact p-
+## value with ties</code></pre>
+<pre><code>## 
+## CORRELATIONS
+## ============
+## - correlation type:  spearman 
+## - correlations shown only when both variables are numeric
+## 
+##                                       TotalGrade TotalDBMFhits
+## TotalGrade                                     .         0.319
+## TotalDBMFhits                              0.319             .
+## TotalTimeStudentsspentinCourseinHours      0.544         0.286
+##                                       TotalTimeStudentsspentinCourseinHours
+## TotalGrade                                                            0.544
+## TotalDBMFhits                                                         0.286
+## TotalTimeStudentsspentinCourseinHours                                     .</code></pre>
+<p>then we can use it to test set</p>
+<pre class="r"><code>glm.probs = predict(glm.fit, newdata = testset, type = &quot;response&quot;) 
+glm.probs[1:5]</code></pre>
+<pre><code>##        7       10       12       16       20 
+## 85.45533 88.69347 88.41446 89.45519 88.88384</code></pre>
+<pre class="r"><code>glm.pred = as.data.frame(round(glm.probs)) 
+colnames(glm.pred) = c(&quot;pred&quot;)
+# calculate the accuracy, the error set to 0 points
+calacc(glm.pred$pred, testset$TotalGrade, 0)</code></pre>
+<pre><code>## [1] 0.8333333</code></pre>
+<p><em>from the result we can conclude that total time spent in the course has more correlation with total grade</em></p>
 
 
 
