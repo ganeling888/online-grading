@@ -5,9 +5,13 @@ date: "2017/4/19"
 output: html_document
 ---
 
+## in this file our original document is KAdebowaleGender_SBU original 050117  test  (1).xlsx.
+## I open the file using Excel, then sort it according to StudentNumber column
+## then save it as KAdebowaleGender_SBU.csv file to use
+
 ## read the data into RStudio
 
 ```{r}
-grading = read.csv("k project data 2.csv")
+grading = read.csv("KAdebowaleGender_SBU.csv")
 
 ```
