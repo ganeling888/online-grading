@@ -13,5 +13,26 @@ output: html_document
 
 ```{r}
 grading = read.csv("KAdebowaleGender_SBU.csv")
-
 ```
+
+
+# The purpose of this project is to  calculate the correlation between the final grade
+## 1. total Hits  (column CW)
+
+```{r}
+data1 = grading[,c("TotalGrade", "TotalDBMFhits")]
+```
+
+## because the data doesn't have any NA and NULL data, we don't need to deal with that
+## create training set and test set
+
+```{r}
+require(caret)
+seed = as.numeric(as.Date("2017-04-19"))
+set.seed(seed)
+inTrain = createDataPartition(data1$TotalGrade, p=0.7)
+trainingset <- data1[inTrain[[1]],]
+testset = data1[-inTrain[[1]],]
+```
+
+### use GLM
