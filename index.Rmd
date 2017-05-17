@@ -75,6 +75,36 @@ calacc = function(x, y, error){
 calacc(glm.pred$pred, testset$TotalGrade, 5)
 ```
 
+use CV and loocv to do the model
+
+```{r}
+require(boot)
+glm.fit = glm(TotalGrade~TotalDBMFhits,data = trainingset)
+cv.glm(trainingset,glm.fit)$delta
+loocv=function(fit){
+  h=lm.influence(fit)$h
+  mean((residuals(fit)/(1-h))^2)
+}
+loocv(glm.fit)
+
+cv.error=rep(0,5)
+degree=1:5   ## polomial 1 to 5 degree
+for(d in degree){
+  glm.fit=glm(TotalGrade~poly(TotalDBMFhits,d), data=trainingset)
+  cv.error[d]=loocv(glm.fit)
+}
+plot(degree,cv.error,type="b")
+
+## 10-fold CV  divide the data 10 parts repeat only 10 times
+
+cv.error10=rep(0,5)
+for(d in degree){
+  glm.fit=glm(TotalGrade~poly(TotalDBMFhits,d), data=trainingset)
+  cv.error10[d]=cv.glm(trainingset,glm.fit,K=10)$delta[1]
+}
+lines(degree,cv.error10,type="b",col="red")
+```
+
 then use SVM model
 
 ```{r}
@@ -84,7 +114,7 @@ plot(TotalDBMFhits, col = TotalGrade + 1)
 dat = data.frame(TotalGrade=factor(TotalGrade),TotalDBMFhits)
 fit = svm(factor(TotalGrade)~.,data=dat,scale=FALSE,kernel="radial",cost=5)
 
-xgrid = expand.grid(X1=px1,X2=px2)
+# xgrid = expand.grid(X1=px1,X2=px2)
 ```
 
 2. total time spent in the course ( Column  T)
@@ -145,6 +175,34 @@ glm.pred = as.data.frame(round(glm.probs))
 colnames(glm.pred) = c("pred")
 # calculate the accuracy, the error set to 0 points
 calacc(glm.pred$pred, testset$TotalGrade, 0)
+```
+
+use CV and loocv to do the model
+
+```{r}
+glm.fit = glm(TotalGrade~TotalTimeStudentsspentinCourseinHours,data = trainingset)
+cv.glm(trainingset,glm.fit)$delta
+loocv=function(fit){
+  h=lm.influence(fit)$h
+  mean((residuals(fit)/(1-h))^2)
+}
+loocv(glm.fit)
+
+cv.error=rep(0,5)
+degree=1:5   ## polomial 1 to 5 degree
+for(d in degree){
+  glm.fit=glm(TotalGrade~poly(TotalTimeStudentsspentinCourseinHours,d), data=trainingset)
+  cv.error[d]=loocv(glm.fit)
+}
+plot(degree,cv.error,type="b")
+
+## 10-fold CV  divide the data 10 parts repeat only 10 times
+cv.error10=rep(0,5)
+for(d in degree){
+  glm.fit=glm(TotalGrade~poly(TotalTimeStudentsspentinCourseinHours,d), data=trainingset)
+  cv.error10[d]=cv.glm(trainingset,glm.fit,K=10)$delta[1]
+}
+lines(degree,cv.error10,type="b",col="red")
 ```
 
 3. Both   Total Hits and Total Time
