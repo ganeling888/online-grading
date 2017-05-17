@@ -75,6 +75,18 @@ calacc = function(x, y, error){
 calacc(glm.pred$pred, testset$TotalGrade, 5)
 ```
 
+then use SVM model
+
+```{r}
+library(e1071)
+attach(trainingset)
+plot(TotalDBMFhits, col = TotalGrade + 1)
+dat = data.frame(TotalGrade=factor(TotalGrade),TotalDBMFhits)
+fit = svm(factor(TotalGrade)~.,data=dat,scale=FALSE,kernel="radial",cost=5)
+
+xgrid = expand.grid(X1=px1,X2=px2)
+```
+
 2. total time spent in the course ( Column  T)
 
 ```{r}
