@@ -2,7 +2,10 @@
 title: "online-grading"
 author: "GAN LING"
 date: "2017/4/19"
-output: html_document
+output: 
+  html_document: 
+    fig_height: 15
+    fig_width: 15
 ---
 
 in this file our original document is KAdebowaleGender_SBU original 050117  test  (1).xlsx.
@@ -105,7 +108,7 @@ for(d in degree){
 lines(degree,cv.error10,type="b",col="red")
 ```
 
-then use SVM model
+then use SVM model, but nothing insteresting by using this, give up
 
 ```{r}
 library(e1071)
@@ -255,3 +258,53 @@ calacc(glm.pred$pred, testset$TotalGrade, 0)
 
 
 *from the result we can conclude that total time spent in the course has more correlation with total grade*
+
+then use PCA to do with the data
+
+```{r}
+datapca = data3[,c(2,3)]
+apply(datapca,2,mean)
+apply(datapca,2, var)
+
+pca.out=prcomp(datapca, scale=TRUE)
+pca.out
+names(pca.out)
+biplot(pca.out, scale=0)
+```
+
+*the interesting thing is they are vertical*
+
+to do more, we can redesign the datapca for us:
+
+```{r}
+datapca = grading[,c(8:12)]
+datapca = cleanNULL(datapca)
+datapca = na.omit(datapca)
+str(datapca)
+datapca$GradeonDiscussionLeader = as.integer(datapca$GradeonDiscussionLeader)
+datapca$GradeonAssignment1 = as.integer(datapca$GradeonAssignment1)
+datapca$GradeonAssignment2 = as.integer(datapca$GradeonAssignment2)
+datapca$GradeonFinalPaper = as.integer(datapca$GradeonFinalPaper)
+
+# then do the pca
+apply(datapca,2,mean)
+apply(datapca,2, var)
+
+pca.out=prcomp(datapca, scale=TRUE)
+pca.out
+names(pca.out)
+biplot(pca.out, scale=0)
+```
+
+from the result we can see that GradeonAssignment1 is the main infuluencing thing in this five variables, with the PC1 equal to `0.5400030`
+
+also, because the var of this five is not too big, then we can se the scale to FALSE to see that whether there are some differences:
+
+```{r}
+pca.out=prcomp(datapca, scale=FALSE)
+pca.out
+names(pca.out)
+biplot(pca.out, scale=0)
+```
+
+this time the result of them is different from the first one, but GradeonAssignment1 is also the main variable in them with PC1 `0.5926345`
